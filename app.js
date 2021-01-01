@@ -47,4 +47,5 @@ requestWithEncoding(options, function(err, data) {
 });
 }
 
+app.listen(3000);
 
