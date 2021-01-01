@@ -18,34 +18,37 @@ var options = {
 };
 
 app.get("/", function(req, res) {
-var requestWithEncoding = function(options, callback) {
-  var req = request.get(options);
+	var requestWithEncoding = function(options, callback) {
+	  var req = request.get(options);
 
-  req.on('response', function(res) {
-    var chunks = [];
-    res.on('data', function(chunk) {
-      chunks.push(chunk);
-    });
+	  req.on('response', function(res) {
+		var chunks = [];
+		res.on('data', function(chunk) {
+		  chunks.push(chunk);
+		});
 
-    res.on('end', function() {
-      var buffer = Buffer.concat(chunks);
-      
-      zlib.gunzip(buffer, function(err, decoded) {
-          callback(err, decoded && decoded.toString());
-        });
-    });
-  });
+		res.on('end', function() {
+		  var buffer = Buffer.concat(chunks);
+		  
+		  zlib.gunzip(buffer, function(err, decoded) {
+			  callback(err, decoded && decoded.toString());
+			});
+		});
+	  });
 
-  req.on('error', function(err) {
-    callback(err);
-  });
-}
+	  req.on('error', function(err) {
+		callback(err);
+	  });
+	}
 
-requestWithEncoding(options, function(err, data) {
-  if (err) console.log(err);
-  else console.log(data);
+	requestWithEncoding(options, function(err, data) {
+			
+		res.setHeader('Content-Type', 'application/json');
+		
+		if (err) console.log(err);
+		else res.end(data);;
+	});
 });
-}
 
 app.listen(3000);
 
