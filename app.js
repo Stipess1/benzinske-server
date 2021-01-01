@@ -16,7 +16,7 @@ var options = {
   headers: headers,
   "rejectUnauthorized": false
 };
-
+const PORT = process.env.PORT || 3000;
 app.get("/", function(req, res) {
 	var requestWithEncoding = function(options, callback) {
 	  var req = request.get(options);
@@ -50,5 +50,5 @@ app.get("/", function(req, res) {
 	});
 });
 
-app.listen(3000);
+app.listen(PORT);
 
