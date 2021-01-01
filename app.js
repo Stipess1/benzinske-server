@@ -1,5 +1,8 @@
 var request = require('request'),
   zlib = require('zlib');
+  
+const express = require('express');
+const app = express();
 
 var headers = {
   "accept-charset" : "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
@@ -14,15 +17,14 @@ var options = {
   "rejectUnauthorized": false
 };
 
+app.get("/", function(req, res) {
 var requestWithEncoding = function(options, callback) {
   var req = request.get(options);
 
   req.on('response', function(res) {
     var chunks = [];
-	console.log(res);
     res.on('data', function(chunk) {
       chunks.push(chunk);
-	  console.log(chunk);
     });
 
     res.on('end', function() {
@@ -41,5 +43,8 @@ var requestWithEncoding = function(options, callback) {
 
 requestWithEncoding(options, function(err, data) {
   if (err) console.log(err);
-  //else console.log(data);
-})
+  else console.log(data);
+});
+}
+
+
