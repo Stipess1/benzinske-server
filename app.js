@@ -45,11 +45,13 @@ app.get("/", function(req, res) {
 
   requestWithEncoding(options, function(data) {
 
-    res.setHeader('Content-Type', 'application/json');
+    res.writeHead(200, {'Content-Type': 'application/json', 'Content-Encoding': 'gzip'});
     if(data.length <= 0)
         res.sendStatus(500);
     else {
-      res.end(data);
+      zlib.gzip(data, function(_, result) {
+        res.end(result);
+      })
     }
   });
 });
