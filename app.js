@@ -56,4 +56,8 @@ app.get("/", function(req, res) {
   });
 });
 
+app.get("/ping", function(req, res) {
+  res.end("Pinged!");
+});
+
 app.listen(PORT);
