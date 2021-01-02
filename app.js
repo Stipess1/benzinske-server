@@ -33,10 +33,10 @@ app.get("/", function(req, res) {
 
       res.on('end', function() {
         var buffer = Buffer.concat(chunks);
-
-        zlib.gunzip(buffer, function(err, decoded) {
-          callback(err, decoded && decoded.toString());
-        });
+        callback(null, buffer);
+        // zlib.gunzip(buffer, function(err, decoded) {
+        //   callback(err, decoded && decoded.toString());
+        // });
       });
     });
 
@@ -46,8 +46,10 @@ app.get("/", function(req, res) {
   }
 
   requestWithEncoding(options, function(err, data) {
+    zlib.gzip(data, function(err, result) {
+      res.end(result);
+    });
 
-    res.send(data);
   });
 });
 
