@@ -46,6 +46,7 @@ app.get("/", function(req, res) {
   }
 
   requestWithEncoding(options, function(err, data) {
+    res.writeHead(200, {'Content-Type': 'text/html', 'Content-Encoding': 'gzip'});
     zlib.gzip(data, function(err, result) {
       res.end(result);
     });
