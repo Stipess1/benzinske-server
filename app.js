@@ -1,8 +1,11 @@
 var request = require('request'),
   zlib = require('zlib');
 
+const compression = require('compression');
 const express = require('express');
 const app = express();
+
+app.use(compression());
 
 var headers = {
   "accept-charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
@@ -31,9 +34,8 @@ app.get("/", function(req, res) {
       res.on('end', function() {
         var buffer = Buffer.concat(chunks);
 
-        callback(buffer);
-        zlib.gunzip(buffer, function(decoded) {
-          callback(decoded && decoded.toString());
+        zlib.gunzip(buffer, function(err, decoded) {
+          callback(err, decoded && decoded.toString());
         });
       });
     });
@@ -43,16 +45,9 @@ app.get("/", function(req, res) {
     });
   }
 
-  requestWithEncoding(options, function(data) {
+  requestWithEncoding(options, function(err, data) {
 
-    res.writeHead(200, {'Content-Type': 'application/json', 'Content-Encoding': 'gzip'});
-    if(data.length <= 0)
-        res.sendStatus(500);
-    else {
-      zlib.gzip(data, function(_, result) {
-        res.end(result);
-      })
-    }
+    res.send(data);
   });
 });
 
