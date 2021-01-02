@@ -45,8 +45,13 @@ app.get("/", function(req, res) {
   }
 
   requestWithEncoding(options, function(err, data) {
-    
-    res.end(data);
+
+    let temp = JSON.parse(data);
+    delete temp['naseljes'];
+    delete temp['opcina_grads'];
+    delete temp['zupanijas'];
+
+    res.end(JSON.stringify(temp));
 
   });
 });
