@@ -32,9 +32,9 @@ app.get("/", function(req, res) {
         var buffer = Buffer.concat(chunks);
 
         callback(buffer);
-        // zlib.gunzip(buffer, function(err, decoded) {
-        //   callback(err, decoded && decoded.toString());
-        // });
+        zlib.gunzip(buffer, function(decoded) {
+          callback(decoded && decoded.toString());
+        });
       });
     });
 
