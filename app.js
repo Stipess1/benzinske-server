@@ -7,6 +7,23 @@ const app = express();
 
 app.use(compression());
 
+
+var allowCrossDomain = function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
+
+    // intercept OPTIONS method
+    if ('OPTIONS' == req.method) {
+      res.send(200);
+    }
+    else {
+      next();
+    }
+};
+
+app.use(allowCrossDomain);
+
 var headers = {
   "accept-charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
   "accept-language": "en-US,en;q=0.8",
