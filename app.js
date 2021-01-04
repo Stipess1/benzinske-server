@@ -67,6 +67,15 @@ app.get("/", function(req, res) {
     delete temp['naseljes'];
     delete temp['opcina_grads'];
     delete temp['zupanijas'];
+    // neke benzinske postaje imaju krivo postavljene vrste goriva
+    for(let i = 0; i < temp['gorivos'].length; i++) {
+      let gorivo = temp['gorivos'][i];
+      if(gorivo['naziv'] === "EURODIESEL BS" && gorivo['id'] == 29) {
+        gorivo['vrsta_goriva_id'] = 8;
+      } else if(gorivo['id'] == 30) {
+        gorivo['vrsta_goriva_id'] = 7;
+      }
+    }
 
     res.end(JSON.stringify(temp));
 
