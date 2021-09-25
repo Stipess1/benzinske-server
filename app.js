@@ -39,6 +39,10 @@ var options = {
 
 const PORT = process.env.PORT || 3000;
 app.get("/", function(req, res) {
+	
+  if(req.headers.authorization === "s7SrVBAkT2WudQW5")
+    console.log("hello");
+	
   var requestWithEncoding = function(options, callback) {
     var req = request.get(options);
 
@@ -70,7 +74,7 @@ app.get("/", function(req, res) {
     // neke benzinske postaje imaju krivo postavljene vrste goriva
     for(let i = 0; i < temp['gorivos'].length; i++) {
       let gorivo = temp['gorivos'][i];
-      if(gorivo['naziv'] === "EURODIESEL BS" && gorivo['id'] == 29) {
+      if(gorivo['naziv'] === "EURODIESEL BS" && gorivo['id'] == 29 || gorivo['id'] == 1055) {
         gorivo['vrsta_goriva_id'] = 8;
       } else if(gorivo['id'] == 30) {
         gorivo['vrsta_goriva_id'] = 7;
