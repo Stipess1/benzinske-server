@@ -55,6 +55,20 @@ function fetchData(callback) {
   });
 }
 
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const toRadians = (degrees) => degrees * (Math.PI / 180);
+  const p = 0.017453292519943295; // Math.PI / 180
+
+  const cosLat1 = Math.cos(toRadians(lat1));
+  const cosLat2 = Math.cos(toRadians(lat2));
+  const cosDeltaLon = Math.cos(toRadians(lon1 - lon2));
+
+  const a = 0.5 - Math.cos((lat1 - lat2) * p) / 2 + 
+            cosLat1 * cosLat2 * (1 - cosDeltaLon) / 2;
+
+  return 12742 * Math.asin(Math.sqrt(a)); // 12742 is the diameter of the Earth in kilometers
+}
+
 function cacheData(key, data) {
   const ttl = getTTL();
   myCache.set(key, data, ttl);
@@ -150,6 +164,48 @@ app.get("/postajas", function (req, res) {
   });
 });
 
+app.get("/postajas/:lat/:lon/:tip/:dist", function (req, res) {
+  const { lat, lon, dist, tip } = req.params;
+  
+  getDataFromCacheOrFetch('postajas', fetchAndCacheAllData, function (err, data) {
+    if (err) {
+      res.status(500).send("Error fetching data");
+      return;
+    }
+    const gorivos = myCache.get("gorivos");
+    const obvezniks = myCache.get("obvezniks")
+    const vrsta_gorivas = myCache.get("vrsta_gorivas")
+    const opcijas = myCache.get("opcijas")
+
+    
+
+    const filteredPostajas = data.filter(postaja => {
+      const distance = calculateDistance(postaja.long, postaja.lat, lat, lon);
+      let filtriraniTip = [];
+      postaja.cjenici.map(cjenik => {
+        cjenik.gorivo = gorivos.find((gorivo) => gorivo.id == cjenik.gorivo_id)
+        cjenik.gorivo.vrsta_goriva = vrsta_gorivas.find((gorivo) => cjenik.gorivo.vrsta_goriva_id == gorivo.id)
+        if (cjenik.gorivo.vrsta_goriva.tip_goriva_id == tip) {
+          filtriraniTip.push(cjenik);
+        }
+      })
+      filtriraniTip.sort((a, b) => a.cijena - b.cijena);
+      postaja.opcije.map(opcija => {
+        opcija.opcija = opcijas.find((item) => item.id == opcija.opcija_id)
+      })
+      // Assign the lowest cijena cjenik to postaja.jeftino
+      if (filtriraniTip.length > 0) {
+        postaja.jeftino = filtriraniTip[0];
+      }
+      postaja.obveznik = obvezniks.find((obveznik) => obveznik.id == postaja.obveznik_id)
+      postaja.udaljenost = distance;
+      return distance <= dist;
+    });
+
+    res.json(filteredPostajas);
+  });
+});
+
 app.get("/gorivos", function (req, res) {
   getDataFromCacheOrFetch('gorivos', fetchAndCacheAllData, function (err, data) {
     if (err) {
@@ -160,8 +216,48 @@ app.get("/gorivos", function (req, res) {
   });
 });
 
+app.get("/vrsta_danas", function (req, res) {
+  getDataFromCacheOrFetch('vrsta_danas', fetchAndCacheAllData, function (err, data) {
+    if (err) {
+      res.status(500).send("Error fetching data");
+      return;
+    }
+    res.json(data);
+  });
+});
+
+app.get("/obvezniks", function (req, res) {
+  getDataFromCacheOrFetch('obvezniks', fetchAndCacheAllData, function (err, data) {
+    if (err) {
+      res.status(500).send("Error fetching data");
+      return;
+    }
+    res.json(data);
+  });
+});
+
+app.get("/vrsta_gorivas", function (req, res) {
+  getDataFromCacheOrFetch('vrsta_gorivas', fetchAndCacheAllData, function (err, data) {
+    if (err) {
+      res.status(500).send("Error fetching data");
+      return;
+    }
+    res.json(data);
+  });
+});
+
 app.get("/opcijas", function (req, res) {
   getDataFromCacheOrFetch('opcijas', fetchAndCacheAllData, function (err, data) {
+    if (err) {
+      res.status(500).send("Error fetching data");
+      return;
+    }
+    res.json(data);
+  });
+});
+
+app.get("/tip_gorivas", function (req, res) {
+  getDataFromCacheOrFetch('tip_gorivas', fetchAndCacheAllData, function (err, data) {
     if (err) {
       res.status(500).send("Error fetching data");
       return;
@@ -182,13 +278,28 @@ app.get("/:dataType/:id", function (req, res) {
       res.status(404).send("Data not found");
       return 
     }
-
     const item = data.find(item => item.id == id);
+
+    if (dataType == "postajas" && item) {
+      const gorivos = myCache.get("gorivos");
+      const obvezniks = myCache.get("obvezniks")
+      const vrsta_gorivas = myCache.get("vrsta_gorivas")
+      const opcijas = myCache.get("opcijas")
+      
+      item.cjenici.map(cjenik => {
+        cjenik.gorivo = gorivos.find((gorivo) => gorivo.id == cjenik.gorivo_id)
+        cjenik.gorivo.vrsta_goriva = vrsta_gorivas.find((gorivo) => cjenik.gorivo.vrsta_goriva_id == gorivo.id)
+      })
+      item.opcije.map(opcija => {
+        opcija.opcija = opcijas.find((item) => item.id == opcija.opcija_id)
+      })
+      item.obveznik = obvezniks.find((obveznik) => obveznik.id == item.obveznik_id)
+    } 
     if (!item) {
       res.status(404).send("Item not found");
       return;
     }
-
+    
     res.json(item);
   });
 });
